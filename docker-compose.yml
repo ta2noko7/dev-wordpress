@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress_db
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    volumes:
+      - db_data:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:latest
+    links:
+      - db
+    ports:
+      - "8000:80"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress_db
+    
+  https-portal:
+    image: steveltn/https-portal:1
+    links:
+      - wordpress
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAINS: 'localhost -> http://wordpress'
+      STAGE: local
+    # STAGE: production
+    volumes:
+        - org-chimata-ssl-certs:/var/lib/https-portal
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    links:
+      - db
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_USER=wordpress
+      - PMA_PASSWORD=wordpress
+
+volumes:
+  db_data: {} 
+  org-chimata-ssl-certs: {}
