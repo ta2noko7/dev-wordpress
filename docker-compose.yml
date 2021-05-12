@@ -13,7 +13,7 @@ services:
       - db_data:/var/lib/mysql
 
   wordpress:
-    image: wordpress:latest
+    build: ./build/wordpress
     links:
       - db
     ports:
@@ -24,6 +24,8 @@ services:
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
       WORDPRESS_DB_NAME: wordpress_db
+    volumes:
+      - ./html:/var/www/html
     
   https-portal:
     image: steveltn/https-portal:1
@@ -50,6 +52,13 @@ services:
       - PMA_HOST=db
       - PMA_USER=wordpress
       - PMA_PASSWORD=wordpress
+
+  mailhog:
+    image: mailhog/mailhog
+    restart: always
+    ports:
+      - "8025:8025"
+      - "1025:1025"
 
 volumes:
   db_data: {} 
